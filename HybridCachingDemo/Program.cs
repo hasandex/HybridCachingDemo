@@ -1,7 +1,9 @@
 using HybridCachingDemo.Models;
 using HybridCachingDemo.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,13 +19,26 @@ builder.Services.AddDbContext<AppDbContext>( opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("PrimaryDB"));
 });
 
+//Rate limiter configurations
+builder.Services.AddRateLimiter(opt =>
+{
+    opt.AddFixedWindowLimiter("Default-Policy", policy =>
+    {
+        policy.Window = TimeSpan.FromMinutes(1);
+        policy.PermitLimit = 10;
+        policy.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        policy.QueueLimit = 3;
+    });
+});
+
+
+
 //configuration Redis (layer 2)
 builder.Services.AddStackExchangeRedisCache(opt =>
 {
     opt.Configuration = builder.Configuration.GetConnectionString("Redis");
     opt.InstanceName = "M03:";
 });
-
 
 //configuration Sql Cache
 //builder.Services.AddDistributedSqlServerCache(opt =>
@@ -32,7 +47,6 @@ builder.Services.AddStackExchangeRedisCache(opt =>
 //    opt.SchemaName = "dbo";
 //    opt.TableName = "cacheEntries";
 //});
-
 
 //configuration Hybrid Cache
 builder.Services.AddHybridCache(opt =>
@@ -50,6 +64,8 @@ builder.Services.AddHybridCache(opt =>
 builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
+
+app.UseRateLimiter();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

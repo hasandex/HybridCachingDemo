@@ -1,5 +1,6 @@
 ﻿using HybridCachingDemo.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.Tasks;
 
 namespace HybridCachingDemo.Controllers
@@ -18,6 +19,14 @@ namespace HybridCachingDemo.Controllers
 
         [HttpGet("Products")]
         public async Task<IActionResult> Index()
+        {
+            var products = await _productService.GetProductAsync(_token);
+            return Ok(products);
+        }
+
+        [HttpGet("Products-limiter")]
+        [EnableRateLimiting(policyName: "Default-Policy")]
+        public async Task<IActionResult> Products()
         {
             var products = await _productService.GetProductAsync(_token);
             return Ok(products);

@@ -6,6 +6,7 @@ namespace HybridCachingDemo.Services
     {
         Task<List<Product>> GetProductAsync(CancellationToken ct);
         Task<List<Product>> GetProductAsyncOld(CancellationToken ct);
+        Task<List<Product>> GetProductAsyncRateLimting(CancellationToken ct);
 
     }
 }

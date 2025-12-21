@@ -37,5 +37,10 @@ namespace HybridCachingDemo.Services
         {
             return await _appDbContext.Products.ToListAsync(ct);
         }
+
+        public async Task<List<Product>> GetProductAsyncRateLimting(CancellationToken ct)
+        {
+            return await _appDbContext.Products.ToListAsync(ct);
+        }
     }
 }
